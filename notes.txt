@@ -1,0 +1,79 @@
+class method notation for def [](pos) - in tic-tac-toe game
+tap method is used to keep track of the thing you're acting on
+
+ex:
+def sum
+  [].tap do |total|
+    [1, 2, 3].each do |i|
+      total << el
+    end
+  end
+end
+
+sum # => [1, 2, 4], which was the blank array that tap acted on
+
+[1, 2, 3].inject(:+) # inject takes the first element from the array
+[1, 2, 3].inject(100, :+) # => 106
+
+end.map # => notation shorthands chains of blocks
+
+array.each do |i|
+  arr2 << i
+end.map do |j|
+  puts j
+end
+
+
+square bracket method/square bracket equals method
+  [] is the method, so we can do:
+  [1, 2, 3].[](0) # => 1
+  def [](pos) acts on the array at that position
+  def []=(pos, mark) sets parameters into an array
+
+fancy eval
+a = 1
+b = 2
+a.send(:+, b) # => 3 from a + b
+#can't use "\"
+
+"eval" has to be heavily sanitized, else it may be used to corrupt the system
+
+@f = "variable of the kernel" #like a global instance
+B = "constant" #this will work inside the file
+
+blocks have their own scope (each, map, inject), but while and for
+loops have the scope of the method, so we can run a counter through them
+
+Array.new(num, object) makes an array of num references to the same object
+Array.new(num) {object} makes an array of num different objects
+
+Hash.new() {|h, k| h[k] = object}
+makes an empty hash, but referencing a non-existing key makes it refer
+to the value "object"
+
+d.fetch("key") returns the key doesn't exist if it doesn't
+d["key"] may go through if Hash.new is defined, but it may be nil
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
