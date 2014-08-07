@@ -13,6 +13,8 @@ class Hangman
 end
 
 class Game
+  attr_accessor :guess_player, :check_player
+  
   def initialize(guessing_player = HumanPlayer, check_player = ComputerPlayer)
     @guess_player = guessing_player.new
     @check_player = check_player.new
@@ -43,7 +45,8 @@ class Game
     
   def display_hint
     puts "You have #{@guess_counter} guesses remaining."
-    puts "Secret word: #{@guess_player.word}"
+    puts "Secret word:    #{@guess_player.word}"
+    puts "Letter Indices: #{(0...@guess_player.word.length).to_a.join("")}"
   end
 
   def solved?
@@ -104,7 +107,6 @@ class HumanPlayer < Player
 end
 
 class ComputerPlayer < Player
-  
   def initialize(file = "dictionary.txt")
     @dictionary = File.read(file).split
     @checked_letters = []
@@ -127,59 +129,72 @@ class ComputerPlayer < Player
   end
   
   def guess_letter
-    @acceptable_words = word_length_match
-    trim_sample
-    populate_frequency
-    #puts @letter_frequency
-    choose_probable_letter
+    possible_words = match_words_by_index(match_words_by_length)
+    letter_frequency = letter_frequency(possible_words)
+    choose_probable_letter(letter_frequency)
   end
   
   private
   
-  def choose_probable_letter
-    max_frequency = 0
-    max_letter = ""
-    @letter_frequency.each do |key, value|
-      if value > max_frequency && !@checked_letters.include?(key)
-        max_frequency = value 
-        max_letter = key
-      end
-    end
-    @checked_letters << max_letter
-    puts max_frequency
-    puts max_letter
-    max_letter 
-  end
-  
-  def populate_frequency
-    @letter_frequency = {}
-    @dictionary.each do |word|
-      word.split("").each do |letter|
-        @letter_frequency[letter] ||= 0
-        @letter_frequency[letter] += 1
-      end
-    end
-  end
-  
-  def trim_sample
-    found = false
-    answer = []
-    self.word.length.times do |i|
-      if ("a".."z").cover?(self.word[i])
-        found = true
-        @acceptable_words.each do |word|
-          answer << word if self.word[i] == word[i]
-        end
-      end
-    end
-    puts answer
-    @acceptable_words = answer
-  end
-
-  def word_length_match
+  def match_words_by_length
     @dictionary.select do |word|
       word.length == self.word.length
     end
+  end
+  
+  def match_words_by_index(possible_words)
+    user_word = map_letter_index(self.word)
+    possible_words.select do |word|
+      test_word = map_letter_index(word)
+      match_word_index?(user_word, test_word)
+    end
+  end
+  
+  def match_word_index?(original_word_index, test_word_index)
+    original_word_index.each do |letter, index|
+      return false unless test_word_index[letter] == index
+    end
+    true
+  end
+  
+  def choose_probable_letter(frequency)
+    max_letter = ""
+    max_frequency = 0
+    
+    frequency.each do |letter, frequency|
+      if frequency > max_frequency && !@checked_letters.include?(letter)
+        max_letter = letter
+        max_frequency = frequency
+      end
+    end
+    
+    @checked_letters << max_letter
+    max_letter 
+  end
+  
+  def letter_frequency(possible_words)
+    frequency = {}
+    
+    possible_words.each do |word|
+      word.split("").each do |letter|
+        frequency[letter] ||= 0
+        frequency[letter] += 1
+      end
+    end
+    
+    frequency
+  end
+  
+  def map_letter_index(str)
+    letter_index = {}
+    
+    str.split("").each_with_index do |letter, index|
+      if letter =~ /[a-z]/
+        letter_index[letter] = index
+      end
+    end
+    
+    letter_index
   end
   
 end
